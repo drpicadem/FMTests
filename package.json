@@ -1,0 +1,25 @@
+{
+  "name": "trello-formal-methods-tests",
+  "version": "1.0.0",
+  "description": "Selenium testovi za Trello aplikaciju - Seminarski rad iz formalnih metoda",
+  "scripts": {
+    "test": "mocha Tests.spec.js --timeout 120000",
+    "test:single": "mocha Tests.spec.js --timeout 120000 --grep"
+  },
+  "keywords": [
+    "selenium",
+    "mocha",
+    "testing",
+    "trello"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "selenium-webdriver": "^4.15.0",
+    "chai": "^4.3.10"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0"
+  }
+}
+

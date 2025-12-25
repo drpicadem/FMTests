@@ -1,0 +1,7 @@
+{
+  "timeout": 120000,
+  "recursive": false,
+  "exit": true,
+  "spec": "Tests.spec.js"
+}
+
