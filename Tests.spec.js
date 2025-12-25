@@ -17,18 +17,18 @@ async function generateRandomName(length = 8) {
 async function findCreateButton(driver) {
     try {
         // Pokušaj sa data-testid (najčešći način u Trellu)
-        return await driver.wait(until.elementLocated(By.css("[data-testid='header-create-menu-button']")), 10000);
+        return await driver.wait(until.elementLocated(By.css("[data-testid='header-create-menu-button']")), 5000);
     } catch (e) {
         try {
             // Pokušaj sa aria-label
-            return await driver.wait(until.elementLocated(By.css("[aria-label*='Create'], [aria-label*='Kreiraj']")), 10000);
+            return await driver.wait(until.elementLocated(By.css("[aria-label*='Create'], [aria-label*='Kreiraj']")), 5000);
         } catch (e2) {
             try {
                 // Pokušaj sa XPath
-                return await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Create') or contains(text(),'Kreiraj')]")), 10000);
+                return await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Create') or contains(text(),'Kreiraj')]")), 5000);
             } catch (e3) {
                 // Pokušaj sa CSS selektorom
-                return await driver.wait(until.elementLocated(By.css("button[class*='create'], a[class*='create']")), 10000);
+                return await driver.wait(until.elementLocated(By.css("button[class*='create'], a[class*='create']")), 5000);
             }
         }
     }
@@ -37,12 +37,12 @@ async function findCreateButton(driver) {
 // Helper funkcija za pronalaženje Create board opcije
 async function findCreateBoardOption(driver) {
     try {
-        return await driver.wait(until.elementLocated(By.xpath("//span[contains(text(),'Create board') or contains(text(),'Kreiraj board')]/parent::* | //button[contains(text(),'Create board') or contains(text(),'Kreiraj board')]")), 10000);
+        return await driver.wait(until.elementLocated(By.xpath("//span[contains(text(),'Create board') or contains(text(),'Kreiraj board')]/parent::* | //button[contains(text(),'Create board') or contains(text(),'Kreiraj board')]")), 5000);
     } catch (e) {
         try {
-            return await driver.wait(until.elementLocated(By.css("[data-testid='header-create-board-button']")), 10000);
+            return await driver.wait(until.elementLocated(By.css("[data-testid='header-create-board-button']")), 5000);
         } catch (e2) {
-            return await driver.wait(until.elementLocated(By.xpath("//a[contains(@href,'board') and contains(text(),'Board')] | //div[contains(text(),'Board')]")), 10000);
+            return await driver.wait(until.elementLocated(By.xpath("//a[contains(@href,'board') and contains(text(),'Board')] | //div[contains(text(),'Board')]")), 5000);
         }
     }
 }
@@ -50,12 +50,12 @@ async function findCreateBoardOption(driver) {
 // Helper funkcija za pronalaženje board title inputa
 async function findBoardTitleInput(driver) {
     try {
-        return await driver.wait(until.elementLocated(By.css("input[data-testid='create-board-title-input']")), 10000);
+        return await driver.wait(until.elementLocated(By.css("input[data-testid='create-board-title-input']")), 5000);
     } catch (e) {
         try {
-            return await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='Add board title' or @placeholder='Dodaj naslov boarda' or contains(@placeholder,'board title')]")), 10000);
+            return await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='Add board title' or @placeholder='Dodaj naslov boarda' or contains(@placeholder,'board title')]")), 5000);
         } catch (e2) {
-            return await driver.wait(until.elementLocated(By.css("input[type='text'], input[class*='title']")), 10000);
+            return await driver.wait(until.elementLocated(By.css("input[type='text'], input[class*='title']")), 5000);
         }
     }
 }
@@ -64,15 +64,17 @@ async function findBoardTitleInput(driver) {
 async function openCreateBoardModal(driver) {
     // Klikni na Create button
     let createButton = await findCreateButton(driver);
-    await driver.wait(until.elementIsVisible(createButton), 10000);
+    await driver.wait(until.elementIsVisible(createButton), 5000);
     await createButton.click();
-    await driver.sleep(500); // Smanjeno sa 1000
+    await driver.wait(until.elementLocated(By.css("[data-testid='header-create-board-button'], [data-testid='header-create-menu-button']")), 3000).catch(() => {});
     
     // Klikni na Create board opciju
     let createBoardOption = await findCreateBoardOption(driver);
-    await driver.wait(until.elementIsVisible(createBoardOption), 10000);
+    await driver.wait(until.elementIsVisible(createBoardOption), 5000);
     await createBoardOption.click();
-    await driver.sleep(1000); // Smanjeno sa 2000
+    
+    // Čekaj da se modal učita - koristi explicit wait umjesto sleep
+    await driver.wait(until.elementLocated(By.css("input[data-testid='create-board-title-input'], input[placeholder*='board title']")), 5000);
     
     // Vrati board title input
     return await findBoardTitleInput(driver);
@@ -80,19 +82,17 @@ async function openCreateBoardModal(driver) {
 
 // Helper funkcija za pronalaženje Create board submit buttona
 async function findCreateBoardSubmitButton(driver) {
-    // Pričekaj malo da se modal učita
-    await driver.sleep(500);
-    
+    // Koristi explicit wait umjesto sleep
     try {
-        return await driver.wait(until.elementLocated(By.css("button[data-testid='create-board-submit-button']")), 15000);
+        return await driver.wait(until.elementLocated(By.css("button[data-testid='create-board-submit-button']")), 5000);
     } catch (e) {
         try {
             // Pokušaj pronaći button sa tekstom "Create" ili "Create board"
-            return await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Create board') or contains(text(),'Kreiraj board') or contains(text(),'Create')]")), 15000);
+            return await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Create board') or contains(text(),'Kreiraj board') or contains(text(),'Create')]")), 5000);
         } catch (e2) {
             try {
                 // Pokušaj pronaći bilo koji submit button u modalu
-                return await driver.wait(until.elementLocated(By.css("form button[type='submit'], button[type='submit']")), 15000);
+                return await driver.wait(until.elementLocated(By.css("form button[type='submit'], button[type='submit']")), 5000);
             } catch (e3) {
                 // Pokušaj pronaći bilo koji button u modalu koji nije disabled
                 let buttons = await driver.findElements(By.css("button:not([disabled])"));
@@ -109,7 +109,7 @@ describe("Trello Board Creation Tests", function () {
     let driver;
 
     beforeEach(async function () {
-        this.timeout(180000); // Povećano sa 120 na 180 sekundi za stabilnije izvršavanje
+        this.timeout(120000); // Smanjeno sa 180 na 120 sekundi
     
         console.log("Opening Trello login page...");
         driver = await new Builder().forBrowser(Browser.CHROME).build();
@@ -117,132 +117,131 @@ describe("Trello Board Creation Tests", function () {
         
         // Idi direktno na login stranicu
         await driver.get("https://trello.com/login");
-        await driver.sleep(2000); // Smanjeno sa 3000
+        // Koristi explicit wait umjesto sleep
+        await driver.wait(until.elementLocated(By.id("user")), 5000).catch(() => {});
     
         // Unesi email - pokušaj više načina pronalaženja
         console.log("Waiting for email field...");
         let emailField;
         try {
             // Pokušaj prvo sa ID
-            emailField = await driver.wait(until.elementLocated(By.id("user")), 10000);
+            emailField = await driver.wait(until.elementLocated(By.id("user")), 5000);
         } catch (e) {
             try {
                 // Pokušaj sa name atributom
-                emailField = await driver.wait(until.elementLocated(By.name("user")), 10000);
+                emailField = await driver.wait(until.elementLocated(By.name("user")), 5000);
             } catch (e2) {
                 try {
                     // Pokušaj sa CSS selektorom
-                    emailField = await driver.wait(until.elementLocated(By.css("input[type='text'], input[type='email']")), 10000);
+                    emailField = await driver.wait(until.elementLocated(By.css("input[type='text'], input[type='email']")), 5000);
                 } catch (e3) {
                     // Pokušaj sa XPath
-                    emailField = await driver.wait(until.elementLocated(By.xpath("//input[@type='text' or @type='email']")), 10000);
+                    emailField = await driver.wait(until.elementLocated(By.xpath("//input[@type='text' or @type='email']")), 5000);
                 }
             }
         }
         
-        await driver.wait(until.elementIsVisible(emailField), 10000);
+        await driver.wait(until.elementIsVisible(emailField), 5000);
         console.log("Entering email...");
         await emailField.clear();
-        await emailField.sendKeys("ademtolja123@gmail.com"); 
-    
-        await driver.sleep(1000);
+        await emailField.sendKeys("ademtolja123@gmail.com");
     
         // Klikni Continue - pokušaj više načina
         console.log("Clicking continue button...");
         let continueButton;
         try {
-            continueButton = await driver.wait(until.elementLocated(By.id("login")), 15000);
+            continueButton = await driver.wait(until.elementLocated(By.id("login")), 5000);
         } catch (e) {
             try {
-                continueButton = await driver.wait(until.elementLocated(By.css("input[type='submit'], button[type='submit']")), 15000);
+                continueButton = await driver.wait(until.elementLocated(By.css("input[type='submit'], button[type='submit']")), 5000);
             } catch (e2) {
-                continueButton = await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Continue') or contains(text(),'Nastavi')] | //input[@value='Continue' or @value='Nastavi']")), 15000);
+                continueButton = await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Continue') or contains(text(),'Nastavi')] | //input[@value='Continue' or @value='Nastavi']")), 5000);
             }
         }
-        await driver.wait(until.elementIsVisible(continueButton), 15000);
+        await driver.wait(until.elementIsVisible(continueButton), 5000);
         await continueButton.click();
-        await driver.sleep(2000); // Smanjeno sa 4000
+        // Čekaj da se password polje učita umjesto fiksnog sleep
+        await driver.wait(until.elementLocated(By.id("password")), 5000).catch(() => {});
     
         // Unesi lozinku - pokušaj više načina
         console.log("Waiting for password field...");
         let passwordField;
         try {
-            passwordField = await driver.wait(until.elementLocated(By.id("password")), 20000);
+            passwordField = await driver.wait(until.elementLocated(By.id("password")), 5000);
         } catch (e) {
             try {
-                passwordField = await driver.wait(until.elementLocated(By.name("password")), 20000);
+                passwordField = await driver.wait(until.elementLocated(By.name("password")), 5000);
             } catch (e2) {
                 try {
-                    passwordField = await driver.wait(until.elementLocated(By.css("input[type='password']")), 20000);
+                    passwordField = await driver.wait(until.elementLocated(By.css("input[type='password']")), 5000);
                 } catch (e3) {
-                    // Ako ništa ne radi, pričekaj malo i pokušaj ponovo
-                    await driver.sleep(2000);
-                    passwordField = await driver.wait(until.elementLocated(By.css("input[type='password']")), 20000);
+                    // Ako ništa ne radi, pokušaj ponovo s kraćim timeoutom
+                    passwordField = await driver.wait(until.elementLocated(By.css("input[type='password']")), 5000);
                 }
             }
         }
-        await driver.wait(until.elementIsVisible(passwordField), 15000);
+        await driver.wait(until.elementIsVisible(passwordField), 5000);
         console.log("Entering password...");
         await passwordField.clear();
-        await passwordField.sendKeys("Adem2003"); 
-        await driver.sleep(1000);
+        await passwordField.sendKeys("Adem2003");
     
         // Klikni Login - pokušaj više načina
         console.log("Clicking login button...");
         let loginButton;
         try {
-            loginButton = await driver.wait(until.elementLocated(By.id("login-submit")), 15000);
+            loginButton = await driver.wait(until.elementLocated(By.id("login-submit")), 5000);
         } catch (e) {
             try {
-                loginButton = await driver.wait(until.elementLocated(By.css("button[type='submit'], input[type='submit']")), 15000);
+                loginButton = await driver.wait(until.elementLocated(By.css("button[type='submit'], input[type='submit']")), 5000);
             } catch (e2) {
-                loginButton = await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Log in') or contains(text(),'Prijavi se')] | //input[@value='Log in' or @value='Prijavi se']")), 15000);
+                loginButton = await driver.wait(until.elementLocated(By.xpath("//button[contains(text(),'Log in') or contains(text(),'Prijavi se')] | //input[@value='Log in' or @value='Prijavi se']")), 5000);
             }
         }
-        await driver.wait(until.elementIsVisible(loginButton), 15000);
+        await driver.wait(until.elementIsVisible(loginButton), 5000);
         await loginButton.click();
-        await driver.sleep(2000); // Smanjeno sa 4000
-    
-        // Pričekaj da se učita dashboard - pokušaj više načina
+        
+        // Pričekaj da se učita dashboard - koristi explicit wait
         console.log("Waiting for dashboard to load...");
         try {
-            await findCreateButton(driver);
+            await driver.wait(async () => {
+                try {
+                    await findCreateButton(driver);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }, 10000);
         } catch (e) {
-            // Ako ništa ne radi, pričekaj malo duže i provjeri URL
-            await driver.sleep(5000);
+            // Ako ništa ne radi, provjeri URL i pokušaj ponovo
             let currentUrl = await driver.getCurrentUrl();
             console.log("Current URL: " + currentUrl);
-            // Pokušaj ponovo
             await findCreateButton(driver);
         }
-        await driver.sleep(1000); // Smanjeno sa 3000
     
         console.log("Login successful!");
     });
 
     // Test 1: Validno kreiranje boarda
     it("Test 1: Valid board creation with random name", async function () {
-        this.timeout(120000);
+        this.timeout(60000); // Smanjeno sa 120000
         
         console.log("Test 1: Creating valid board...");
         
         // Otvori Create board modal
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         let boardName = await generateRandomName(10);
         await boardTitleInput.sendKeys(boardName);
-        await driver.sleep(300); // Smanjeno sa 500
         
         // Klikni Create board button
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000); // Smanjeno sa 3000
         
-        // Provjeri da je board kreiran - traži naziv boarda na stranici
-        let boardHeader = await driver.wait(until.elementLocated(By.xpath(`//h1[contains(text(),'${boardName}')]`)), 15000);
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        // Provjeri da je board kreiran - koristi explicit wait umjesto sleep
+        let boardHeader = await driver.wait(until.elementLocated(By.xpath(`//h1[contains(text(),'${boardName}')]`)), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         
         let headerText = await boardHeader.getText();
         expect(headerText).to.include(boardName);
@@ -252,15 +251,23 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 2: Kreiranje boarda s praznim nazivom
     it("Test 2: Board creation with empty name", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 2: Testing board creation with empty name...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         await boardTitleInput.sendKeys("");
-        await driver.sleep(1000);
+        // Čekaj da se validacija primijeni
+        await driver.wait(async () => {
+            try {
+                let button = await findCreateBoardSubmitButton(driver);
+                return !(await button.isEnabled());
+            } catch (e) {
+                return false;
+            }
+        }, 3000);
         
         // Provjeri da je Create board button disabled ili da postoji validacija
         let createBoardButton = await findCreateBoardSubmitButton(driver);
@@ -274,16 +281,24 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 3: Kreiranje boarda s predugačkim nazivom (više od 512 znakova)
     it("Test 3: Board creation with name that is too long", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 3: Testing board creation with too long name...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         let longName = await generateRandomName(513); // Preko maksimalne duljine
         await boardTitleInput.sendKeys(longName);
-        await driver.sleep(1000);
+        // Čekaj da se validacija primijeni
+        await driver.wait(async () => {
+            try {
+                let value = await boardTitleInput.getAttribute('value');
+                return value.length <= 513;
+            } catch (e) {
+                return false;
+            }
+        }, 2000);
         
         // Provjeri da li postoji poruka greške ili da je input ograničen
         try {
@@ -307,35 +322,36 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 4: Kreiranje boarda s minimalnom duljinom naziva (1 znak)
     it("Test 4: Board creation with minimum length name (1 character)", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 4: Testing board creation with 1 character name...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         await boardTitleInput.sendKeys("A");
-        await driver.sleep(300);
         
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000);
+        
+        // Čekaj da se board učita
+        await driver.wait(until.elementLocated(By.xpath("//h1")), 8000);
         
         // Provjeri da je board kreiran - pokušaj više načina
         let boardHeader;
         try {
-            boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1[contains(text(),'A')]")), 10000);
+            boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1[contains(text(),'A')]")), 8000);
         } catch (e) {
             try {
                 // Pokušaj pronaći bilo koji h1 element
-                boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1")), 10000);
+                boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1")), 8000);
             } catch (e2) {
                 // Pokušaj pronaći board title na bilo koji način
-                boardHeader = await driver.wait(until.elementLocated(By.css("[data-testid='board-name'], [class*='board-name'], h1")), 10000);
+                boardHeader = await driver.wait(until.elementLocated(By.css("[data-testid='board-name'], [class*='board-name'], h1")), 8000);
             }
         }
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         
         let headerText = await boardHeader.getText();
         // Provjeri da header postoji i da nije prazan (board je kreiran)
@@ -347,25 +363,23 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 5: Kreiranje boarda s maksimalnom dozvoljenom duljinom naziva (512 znakova)
     it("Test 5: Board creation with maximum length name (512 characters)", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 5: Testing board creation with 512 character name...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         let maxLengthName = await generateRandomName(512);
         await boardTitleInput.sendKeys(maxLengthName);
-        await driver.sleep(300);
         
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000);
         
         // Provjeri da je board kreiran
-        let boardHeader = await driver.wait(until.elementLocated(By.xpath(`//h1[contains(text(),'${maxLengthName.substring(0, 20)}')]`)), 15000);
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        let boardHeader = await driver.wait(until.elementLocated(By.xpath(`//h1[contains(text(),'${maxLengthName.substring(0, 20)}')]`)), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         
         let headerText = await boardHeader.getText();
         expect(headerText.length).to.be.at.least(1);
@@ -375,25 +389,23 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 6: Kreiranje boarda s posebnim znakovima
     it("Test 6: Board creation with special characters", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 6: Testing board creation with special characters...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         let specialName = "Test!@#$%^&*()_+-=[]{}|;:,.<>?";
         await boardTitleInput.sendKeys(specialName);
-        await driver.sleep(300);
         
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000);
         
         // Provjeri da je board kreiran (može biti sanitiziran)
-        let boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1")), 15000);
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        let boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1")), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         
         let headerText = await boardHeader.getText();
         expect(headerText).to.not.be.empty;
@@ -403,25 +415,23 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 7: Kreiranje boarda s razmacima
     it("Test 7: Board creation with spaces in name", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 7: Testing board creation with spaces...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         let nameWithSpaces = "My Test Board 2024";
         await boardTitleInput.sendKeys(nameWithSpaces);
-        await driver.sleep(300);
         
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000);
         
         // Provjeri da je board kreiran
-        let boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1[contains(text(),'My Test Board')]")), 15000);
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        let boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1[contains(text(),'My Test Board')]")), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         
         let headerText = await boardHeader.getText();
         expect(headerText).to.include("My Test Board");
@@ -431,15 +441,23 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 8: Kreiranje boarda s samo razmacima (trebalo bi biti nevažeće)
     it("Test 8: Board creation with only spaces", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 8: Testing board creation with only spaces...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         await boardTitleInput.sendKeys("     ");
-        await driver.sleep(500); // Smanjeno sa 1000
+        // Čekaj da se validacija primijeni
+        await driver.wait(async () => {
+            try {
+                let button = await findCreateBoardSubmitButton(driver);
+                return !(await button.isEnabled());
+            } catch (e) {
+                return false;
+            }
+        }, 2000);
         
         // Provjeri da je Create board button disabled
         let createBoardButton = await findCreateBoardSubmitButton(driver);
@@ -452,32 +470,31 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 9: Kreiranje boarda i zatim provjera da postoji na dashboardu
     it("Test 9: Board creation and verification on dashboard", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 9: Testing board creation and dashboard verification...");
         
         let boardName = "Dashboard Test " + await generateRandomName(5);
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         await boardTitleInput.sendKeys(boardName);
-        await driver.sleep(300);
         
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000);
         
         // Provjeri da je board kreiran - ovo je glavna validacija
-        let boardHeader = await driver.wait(until.elementLocated(By.xpath(`//h1[contains(text(),'${boardName}')]`)), 15000);
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        let boardHeader = await driver.wait(until.elementLocated(By.xpath(`//h1[contains(text(),'${boardName}')]`)), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         let headerText = await boardHeader.getText();
         expect(headerText).to.include(boardName.substring(0, Math.min(20, boardName.length)));
         
         // Vrati se na dashboard - pokušaj direktno ići na home
         await driver.get("https://trello.com/home");
-        await driver.sleep(5000); // Povećano da se dashboard potpuno učita
+        // Čekaj da se dashboard učita umjesto fiksnog sleep
+        await driver.wait(until.elementLocated(By.css("body")), 5000);
         
         // Provjeri da smo na dashboardu - provjeri URL
         let currentUrl = await driver.getCurrentUrl();
@@ -494,13 +511,13 @@ describe("Trello Board Creation Tests", function () {
                 // Pokušaj različite selektore
                 boards = await driver.findElements(By.css(".board-tile, [class*='board'], [data-testid*='board'], [data-testid='board-tile'], a[href*='/b/'], [data-testid='board-tile-details-name'], [class*='BoardTile'], [class*='board-tile-details']"));
                 if (boards.length === 0) {
-                    await driver.sleep(1000);
+                    await driver.wait(until.elementLocated(By.css("body")), 500).catch(() => {});
                     attempts++;
                 } else {
                     break; // Pronađen je barem jedan board
                 }
             } catch (e) {
-                await driver.sleep(1000);
+                await driver.wait(until.elementLocated(By.css("body")), 500).catch(() => {});
                 attempts++;
             }
         }
@@ -524,26 +541,24 @@ describe("Trello Board Creation Tests", function () {
 
     // Test 10: Kreiranje boarda s Unicode znakovima
     it("Test 10: Board creation with Unicode characters", async function () {
-        this.timeout(120000);
+        this.timeout(60000);
         
         console.log("Test 10: Testing board creation with Unicode characters...");
         
         let boardTitleInput = await openCreateBoardModal(driver);
-        await driver.wait(until.elementIsVisible(boardTitleInput), 10000);
+        await driver.wait(until.elementIsVisible(boardTitleInput), 5000);
         await boardTitleInput.clear();
         // Koristi samo BMP Unicode znakove (bez emoji jer ChromeDriver ne podržava)
         let unicodeName = "Test 测试 テスト тест";
         await boardTitleInput.sendKeys(unicodeName);
-        await driver.sleep(300);
         
         let createBoardButton = await findCreateBoardSubmitButton(driver);
-        await driver.wait(until.elementIsVisible(createBoardButton), 10000);
+        await driver.wait(until.elementIsVisible(createBoardButton), 5000);
         await createBoardButton.click();
-        await driver.sleep(2000);
         
         // Provjeri da je board kreiran
-        let boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1")), 15000);
-        await driver.wait(until.elementIsVisible(boardHeader), 10000);
+        let boardHeader = await driver.wait(until.elementLocated(By.xpath("//h1")), 10000);
+        await driver.wait(until.elementIsVisible(boardHeader), 5000);
         
         let headerText = await boardHeader.getText();
         expect(headerText).to.not.be.empty;
@@ -553,22 +568,22 @@ describe("Trello Board Creation Tests", function () {
     });
 
     afterEach(async function () {
-        this.timeout(30000);
+        this.timeout(15000); // Smanjeno sa 30000
         try {
             // Pokušaj zatvoriti sve modale ili overlay-e
             try {
                 let closeButton = await driver.findElement(By.xpath("//button[contains(@aria-label,'Close') or contains(@class,'close')]"));
                 await closeButton.click();
-                await driver.sleep(500);
+                await driver.wait(until.stalenessOf(closeButton), 2000).catch(() => {});
             } catch (e) {
                 // Ignoriraj ako nema close buttona
             }
             
-            // Vrati se na dashboard prije zatvaranja
+            // Vrati se na dashboard prije zatvaranja (ne čekaj previše)
             try {
                 let homeLink = await driver.findElement(By.xpath("//a[contains(@href,'home') or contains(@aria-label,'Home')]"));
                 await homeLink.click();
-                await driver.sleep(1000);
+                await driver.wait(until.urlContains("trello.com"), 2000).catch(() => {});
             } catch (e) {
                 // Ignoriraj ako nije moguće
             }
