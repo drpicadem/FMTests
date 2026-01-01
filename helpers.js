@@ -317,6 +317,190 @@ async function handleTwoStepVerificationModal(driver) {
 }
 
 /**
+ * Open Gmail in a new tab and return window handles
+ */
+async function openGmailInNewTab(driver) {
+  logger.info("Opening Gmail in new tab...");
+  
+  // Get current window handle (Trello)
+  const trelloHandle = await driver.getWindowHandle();
+  
+  // Open new tab by executing script
+  await driver.executeScript("window.open('https://mail.google.com');");
+  await driver.sleep(config.delays.medium);
+  
+  // Get all window handles
+  const handles = await driver.getAllWindowHandles();
+  
+  // Find the Gmail handle (it's the new one)
+  const gmailHandle = handles.find(handle => handle !== trelloHandle);
+  
+  // Switch to Gmail tab
+  await driver.switchTo().window(gmailHandle);
+  logger.info("Switched to Gmail tab");
+  
+  // Wait for Gmail to load
+  await driver.sleep(config.gmail.pageLoadTimeout);
+  
+  return { trelloHandle, gmailHandle };
+}
+
+/**
+ * Find 2FA code input field
+ */
+async function find2FACodeInput(driver) {
+  return await findElementWithFallback(
+    driver,
+    [
+      By.css("input[type='text'][name*='code']"),
+      By.css("input[type='text'][placeholder*='code']"),
+      By.css("input[type='tel']"),
+      By.xpath("//input[@type='text' or @type='tel']"),
+    ],
+    config.twoFactorAuth.codeInputTimeout
+  );
+}
+
+/**
+ * Extract 2FA code from Gmail
+ */
+async function extract2FACodeFromGmail(driver, gmailHandle, trelloHandle) {
+  logger.info("Extracting 2FA code from Gmail...");
+  
+  // Make sure we're on Gmail tab
+  await driver.switchTo().window(gmailHandle);
+  await driver.sleep(config.delays.medium);
+  
+  try {
+    // Wait a bit for email to arrive
+    await driver.sleep(config.delays.long);
+    
+    // Try to find the latest email from Trello with verification code
+    // Look for emails with "Verifying it's you" or similar subject
+    const emailStrategies = [
+      By.xpath("//tr[contains(@class, 'zA')]//span[contains(text(), 'Verifying')]/.."),
+      By.xpath("//tr[contains(@class, 'zA')]//span[contains(text(), 'Trello')]/.."),
+      By.xpath("//div[contains(@class, 'Cp')]//span[contains(text(), 'Verifying')]/.."),
+      By.css("tr.zA"),
+    ];
+    
+    let emailElement = null;
+    for (let strategy of emailStrategies) {
+      try {
+        const elements = await driver.findElements(strategy);
+        if (elements.length > 0) {
+          emailElement = elements[0];
+          break;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+    
+    if (!emailElement) {
+      throw new Error("Could not find Trello verification email");
+    }
+    
+    // Click on the email to open it
+    logger.info("Opening verification email...");
+    await emailElement.click();
+    await driver.sleep(config.gmail.emailOpenTimeout);
+    
+    // Get the email body text
+    const bodyElement = await driver.wait(
+      until.elementLocated(By.css("div[role='main'], div.a3s, div.ii")),
+      config.delays.long
+    );
+    await driver.sleep(config.delays.medium);
+    const emailText = await bodyElement.getText();
+    
+    logger.debug("Email text: " + emailText.substring(0, 200));
+    
+    // Extract the 6-character code using regex
+    // Pattern: 6 uppercase letters/numbers (e.g., PWM476)
+    const codePattern = /\b[A-Z0-9]{6}\b/;
+    const match = emailText.match(codePattern);
+    
+    if (!match) {
+      throw new Error("Could not extract 2FA code from email");
+    }
+    
+    const code = match[0];
+    logger.success(`2FA code found: ${code}`);
+    
+    // Switch back to Trello tab
+    await driver.switchTo().window(trelloHandle);
+    
+    // Close Gmail tab
+    await driver.switchTo().window(gmailHandle);
+    await driver.close();
+    await driver.switchTo().window(trelloHandle);
+    
+    return code;
+  } catch (error) {
+    logger.error("Error extracting 2FA code: " + error.message);
+    // Switch back to Trello tab even on error
+    await driver.switchTo().window(trelloHandle);
+    throw error;
+  }
+}
+
+/**
+ * Handle 2FA verification using Gmail
+ */
+async function handle2FAWithGmail(driver) {
+  try {
+    logger.info("Checking for 2FA verification requirement...");
+    
+    // Wait a bit to see if 2FA is required
+    await driver.sleep(config.delays.mediumLong);
+    
+    // Try to find 2FA code input field
+    let codeInput;
+    try {
+      codeInput = await find2FACodeInput(driver);
+      logger.info("2FA verification required, checking Gmail for code...");
+    } catch (e) {
+      // No 2FA required
+      logger.debug("2FA not required, continuing...");
+      return false;
+    }
+    
+    // Open Gmail in new tab
+    const { trelloHandle, gmailHandle } = await openGmailInNewTab(driver);
+    
+    // Extract code from Gmail
+    const code = await extract2FACodeFromGmail(driver, gmailHandle, trelloHandle);
+    
+    // Enter the code
+    logger.info("Entering 2FA code...");
+    await codeInput.clear();
+    await codeInput.sendKeys(code);
+    await driver.sleep(config.delays.standard);
+    
+    // Find and click submit button
+    const submitButton = await findElementWithFallback(
+      driver,
+      [
+        By.css("button[type='submit']"),
+        By.xpath("//button[contains(text(), 'Verify') or contains(text(), 'Continue')]"),
+        By.css("button"),
+      ],
+      config.twoFactorAuth.codeInputTimeout
+    );
+    
+    await submitButton.click();
+    await driver.sleep(config.twoFactorAuth.verificationTimeout);
+    
+    logger.success("2FA verification successful!");
+    return true;
+  } catch (error) {
+    logger.error("Error handling 2FA: " + error.message);
+    throw error;
+  }
+}
+
+/**
  * Perform login to Trello
  */
 async function performLogin(driver) {
@@ -362,6 +546,9 @@ async function performLogin(driver) {
 
   // Handle two-step verification modal if it appears
   await handleTwoStepVerificationModal(driver);
+  
+  // Handle 2FA verification with Gmail if required
+  await handle2FAWithGmail(driver);
 
   logger.info("Waiting for dashboard to load...");
   try {
@@ -451,6 +638,10 @@ module.exports = {
   findLoginButton,
   performLogin,
   handleTwoStepVerificationModal,
+  openGmailInNewTab,
+  find2FACodeInput,
+  extract2FACodeFromGmail,
+  handle2FAWithGmail,
   createBoard,
   findBoardHeader,
   verifyBoardCreated,
