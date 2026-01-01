@@ -1,4 +1,4 @@
-const { setupDriver, teardownDriver } = require("./tests/setup");
+const { setupDriver, teardownDriver, teardownDriverFinal, checkIfSingleTest, setSingleTestMode } = require("./tests/setup");
 const test1 = require("./tests/test1");
 const test2 = require("./tests/test2");
 const test3 = require("./tests/test3");
@@ -12,13 +12,35 @@ const test10 = require("./tests/test10");
 const config = require("./config");
 
 describe("Trello Board Creation Tests", function () {
-  beforeEach(async function () {
-    await setupDriver.call(this);
-  });
+  // Provjeri da li se pokreće pojedinačni test
+  const isSingleTest = checkIfSingleTest();
+  setSingleTestMode(isSingleTest);
 
-  afterEach(async function () {
-    await teardownDriver.call(this);
-  });
+  if (isSingleTest) {
+    // Pojedinačni test - login prije svakog testa
+    beforeEach(async function () {
+      await setupDriver.call(this);
+    });
+
+    afterEach(async function () {
+      await teardownDriver.call(this);
+    });
+  } else {
+    // Više testova - login samo jednom prije prvog testa
+    before(async function () {
+      await setupDriver.call(this);
+    });
+
+    // Nakon svakog testa, samo vrati na home (ne zatvaraj driver)
+    afterEach(async function () {
+      await teardownDriver.call(this);
+    });
+
+    // Zatvori driver na kraju svih testova
+    after(async function () {
+      await teardownDriverFinal.call(this);
+    });
+  }
 
   it("Test 1: Valid board creation with random name", test1);
   it("Test 2: Board creation with empty name", test2);
