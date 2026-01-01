@@ -39,7 +39,7 @@ module.exports = {
 
   // Login credentials
   credentials: {
-    email: "ademtolja123@gmail.com",
-    password: "Adem2003",
+    email: "fmtestovi@gmail.com",
+    password: "fmtestovi",
   },
 };

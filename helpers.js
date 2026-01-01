@@ -282,6 +282,41 @@ async function findLoginButton(driver) {
 }
 
 /**
+ * Handle two-step verification modal if it appears
+ */
+async function handleTwoStepVerificationModal(driver) {
+  try {
+    logger.info("Checking for two-step verification modal...");
+    // Wait a bit for modal to appear
+    await driver.sleep(config.delays.medium);
+    
+    // Try to find the "Continue without two-step verification" button
+    const continueWithoutButton = await driver.wait(
+      until.elementLocated(
+        By.xpath(
+          "//button[contains(text(),'Continue without two-step verification') or contains(text(),'Nastavi bez dvofaktorske verifikacije')]"
+        )
+      ),
+      config.timeouts.elementLocator
+    );
+    
+    if (continueWithoutButton) {
+      await driver.wait(
+        until.elementIsVisible(continueWithoutButton),
+        config.timeouts.elementVisible
+      );
+      logger.info("Clicking 'Continue without two-step verification' button...");
+      await continueWithoutButton.click();
+      await driver.sleep(config.delays.afterClick);
+      logger.success("Two-step verification modal handled");
+    }
+  } catch (e) {
+    // Modal didn't appear, which is fine
+    logger.debug("Two-step verification modal not found, continuing...");
+  }
+}
+
+/**
  * Perform login to Trello
  */
 async function performLogin(driver) {
@@ -324,6 +359,9 @@ async function performLogin(driver) {
   );
   await loginButton.click();
   await driver.sleep(config.delays.afterLogin);
+
+  // Handle two-step verification modal if it appears
+  await handleTwoStepVerificationModal(driver);
 
   logger.info("Waiting for dashboard to load...");
   try {
@@ -412,6 +450,7 @@ module.exports = {
   findContinueButton,
   findLoginButton,
   performLogin,
+  handleTwoStepVerificationModal,
   createBoard,
   findBoardHeader,
   verifyBoardCreated,
