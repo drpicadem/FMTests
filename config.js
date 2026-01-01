@@ -55,4 +55,10 @@ module.exports = {
     email: "fmtestovi@gmail.com",
     password: "fmtestovi",
   },
+
+  // Gmail credentials
+  gmailCredentials: {
+    email: "fmtestovi@gmail.com",
+    password: "FmTestovi123",
+  },
 };

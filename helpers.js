@@ -317,6 +317,89 @@ async function handleTwoStepVerificationModal(driver) {
 }
 
 /**
+ * Login to Gmail
+ */
+async function loginToGmail(driver) {
+  logger.info("Logging in to Gmail...");
+  
+  try {
+    // Wait for page to load
+    await driver.sleep(config.delays.mediumLong);
+    
+    // Check if already logged in by looking for compose button or profile icon
+    try {
+      const composeButton = await driver.findElement(By.xpath("//div[contains(text(), 'Compose') or contains(@aria-label, 'Compose')]"));
+      if (composeButton) {
+        logger.info("Already logged in to Gmail");
+        return;
+      }
+    } catch (e) {
+      // Not logged in, continue with login
+    }
+    
+    // Find email input field
+    logger.info("Looking for Gmail email input...");
+    const emailInput = await driver.wait(
+      until.elementLocated(By.css("input[type='email']")),
+      config.timeouts.elementLocatorLong
+    );
+    await driver.wait(
+      until.elementIsVisible(emailInput),
+      config.timeouts.elementVisible
+    );
+    
+    // Enter email
+    logger.info("Entering Gmail email...");
+    await emailInput.clear();
+    await emailInput.sendKeys(config.gmailCredentials.email);
+    await driver.sleep(config.delays.standard);
+    
+    // Click Next button
+    logger.info("Clicking Next button...");
+    const nextButton = await driver.wait(
+      until.elementLocated(By.xpath("//button[contains(., 'Next') or contains(., 'Dalje')]")),
+      config.timeouts.elementLocator
+    );
+    await nextButton.click();
+    await driver.sleep(config.delays.mediumLong);
+    
+    // Wait for password field
+    logger.info("Looking for Gmail password input...");
+    const passwordInput = await driver.wait(
+      until.elementLocated(By.css("input[type='password']")),
+      config.timeouts.elementLocatorLong
+    );
+    await driver.wait(
+      until.elementIsVisible(passwordInput),
+      config.timeouts.elementVisible
+    );
+    
+    // Enter password
+    logger.info("Entering Gmail password...");
+    await passwordInput.clear();
+    await passwordInput.sendKeys(config.gmailCredentials.password);
+    await driver.sleep(config.delays.standard);
+    
+    // Click Next/Login button
+    logger.info("Clicking Login button...");
+    const loginButton = await driver.wait(
+      until.elementLocated(By.xpath("//button[contains(., 'Next') or contains(., 'Dalje')]")),
+      config.timeouts.elementLocator
+    );
+    await loginButton.click();
+    
+    // Wait for Gmail to load
+    logger.info("Waiting for Gmail to load after login...");
+    await driver.sleep(config.gmail.pageLoadTimeout);
+    
+    logger.success("Gmail login successful!");
+  } catch (error) {
+    logger.error("Error logging in to Gmail: " + error.message);
+    throw error;
+  }
+}
+
+/**
  * Open Gmail in a new tab and return window handles
  */
 async function openGmailInNewTab(driver) {
@@ -341,6 +424,9 @@ async function openGmailInNewTab(driver) {
   
   // Wait for Gmail to load
   await driver.sleep(config.gmail.pageLoadTimeout);
+  
+  // Login to Gmail
+  await loginToGmail(driver);
   
   return { trelloHandle, gmailHandle };
 }
@@ -638,6 +724,7 @@ module.exports = {
   findLoginButton,
   performLogin,
   handleTwoStepVerificationModal,
+  loginToGmail,
   openGmailInNewTab,
   find2FACodeInput,
   extract2FACodeFromGmail,
