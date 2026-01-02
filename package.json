@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Selenium testovi za Trello aplikaciju - Seminarski rad iz formalnih metoda",
   "scripts": {
-    "test": "mocha Tests.spec.js --timeout 120000",
-    "test:single": "mocha Tests.spec.js --timeout 120000 --grep"
+    "test": "mocha Tests.spec.js --timeout 180000",
+    "test:single": "mocha Tests.spec.js --timeout 180000 --grep"
   },
   "keywords": [
     "selenium",

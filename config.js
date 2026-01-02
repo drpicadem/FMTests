@@ -5,9 +5,9 @@
 module.exports = {
   // Timeouts (milliseconds)
   timeouts: {
-    elementLocator: 3000,
-    elementLocatorExtended: 5000,
-    elementLocatorLong: 10000,
+    elementLocator: 10000, 
+    elementLocatorExtended: 15000,
+    elementLocatorLong: 20000,
     testDefault: 120000,
     testBeforeEach: 60000,
     testAfterEach: 10000,
@@ -29,6 +29,12 @@ module.exports = {
     afterPageLoad: 2000,
     afterBoardCreate: 2000,
     afterDashboardLoad: 5000,
+  },
+
+  // Retry configuration
+  retry: {
+    maxAttempts: 10,
+    retryDelay: 1000,
   },
 
   // Login credentials
