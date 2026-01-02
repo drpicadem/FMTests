@@ -31,33 +31,8 @@ module.exports = {
     afterDashboardLoad: 5000,
   },
 
-  // Gmail-specific timeouts
-  gmail: {
-    pageLoadTimeout: 10000,
-    emailSearchTimeout: 15000,
-    emailOpenTimeout: 5000,
-  },
-
-  // Two-factor authentication timeouts
-  twoFactorAuth: {
-    codeInputTimeout: 5000,
-    verificationTimeout: 10000,
-  },
-
-  // Retry configuration
-  retry: {
-    maxAttempts: 10,
-    retryDelay: 1000,
-  },
-
   // Login credentials
   credentials: {
-    email: "fmtestovi@gmail.com",
-    password: "fmtestovi",
-  },
-
-  // Gmail credentials
-  gmailCredentials: {
     email: "fmtestovi@gmail.com",
     password: "FmTestovi123",
   },

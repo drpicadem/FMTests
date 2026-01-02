@@ -587,66 +587,90 @@ async function handle2FAWithGmail(driver) {
 }
 
 /**
- * Perform login to Trello
+ * Perform login to Trello via Google Sign-In
  */
 async function performLogin(driver) {
-  logger.info("Waiting for email field...");
-  let emailField = await findEmailField(driver);
-  await driver.wait(
-    until.elementIsVisible(emailField),
-    config.timeouts.elementVisible
-  );
-  logger.info("Entering email...");
-  await emailField.clear();
-  await emailField.sendKeys(config.credentials.email);
-  await driver.sleep(config.delays.standard);
-
-  logger.info("Clicking continue button...");
-  let continueButton = await findContinueButton(driver);
-  await driver.wait(
-    until.elementIsVisible(continueButton),
-    config.timeouts.elementVisibleExtended
-  );
-  await continueButton.click();
-  await driver.sleep(config.delays.afterLogin);
-
-  logger.info("Waiting for password field...");
-  let passwordField = await findPasswordField(driver);
-  await driver.wait(
-    until.elementIsVisible(passwordField),
-    config.timeouts.elementVisibleExtended
-  );
-  logger.info("Entering password...");
-  await passwordField.clear();
-  await passwordField.sendKeys(config.credentials.password);
-  await driver.sleep(config.delays.standard);
-
-  logger.info("Clicking login button...");
-  let loginButton = await findLoginButton(driver);
-  await driver.wait(
-    until.elementIsVisible(loginButton),
-    config.timeouts.elementVisibleExtended
-  );
-  await loginButton.click();
-  await driver.sleep(config.delays.afterLogin);
-
-  // Handle two-step verification modal if it appears
-  await handleTwoStepVerificationModal(driver);
-  
-  // Handle 2FA verification with Gmail if required
-  await handle2FAWithGmail(driver);
-
-  logger.info("Waiting for dashboard to load...");
   try {
-    await findCreateButton(driver);
-  } catch (e) {
-    await driver.sleep(config.delays.veryLong);
-    let currentUrl = await driver.getCurrentUrl();
-    logger.debug("Current URL: " + currentUrl);
-    await findCreateButton(driver);
+    logger.info("Waiting for Trello login page...");
+    await driver.sleep(config.delays.medium);
+
+    // Click "Google" button in "Or continue with:" section
+    logger.info("Looking for Google Sign-In button...");
+    const googleButton = await findElementWithFallback(
+      driver,
+      [
+        By.xpath("//button[contains(., 'Google')]"),
+        By.xpath("//div[contains(text(), 'Google')]/ancestor::button"),
+        By.css("button[aria-label*='Google']"),
+        By.xpath("//span[contains(text(), 'Google')]/ancestor::button"),
+      ],
+      config.timeouts.elementLocatorLong
+    );
+
+    logger.info("Clicking Google Sign-In button...");
+    await googleButton.click();
+    await driver.sleep(config.delays.mediumLong);
+
+    // Now we're on Google login page - enter email
+    logger.info("Waiting for Google email field...");
+    const emailField = await driver.wait(
+      until.elementLocated(By.css("input[type='email']")),
+      config.timeouts.elementLocatorLong
+    );
+    await driver.wait(
+      until.elementIsVisible(emailField),
+      config.timeouts.elementVisible
+    );
+
+    logger.info("Entering email...");
+    await emailField.clear();
+    await emailField.sendKeys(config.credentials.email);
+    await driver.sleep(config.delays.standard);
+
+    // Click Next button
+    logger.info("Clicking Next button...");
+    const nextButton = await driver.wait(
+      until.elementLocated(By.xpath("//button[contains(., 'Next') or contains(., 'Dalje')]")),
+      config.timeouts.elementLocator
+    );
+    await nextButton.click();
+    await driver.sleep(config.delays.mediumLong);
+
+    // Enter password
+    logger.info("Waiting for password field...");
+    const passwordField = await driver.wait(
+      until.elementLocated(By.css("input[type='password']")),
+      config.timeouts.elementLocatorLong
+    );
+    await driver.wait(
+      until.elementIsVisible(passwordField),
+      config.timeouts.elementVisible
+    );
+
+    logger.info("Entering password...");
+    await passwordField.clear();
+    await passwordField.sendKeys(config.credentials.password);
+    await driver.sleep(config.delays.standard);
+
+    // Click Next/Sign in button
+    logger.info("Clicking Sign in button...");
+    const signInButton = await driver.wait(
+      until.elementLocated(By.xpath("//button[contains(., 'Next') or contains(., 'Dalje')]")),
+      config.timeouts.elementLocator
+    );
+    await signInButton.click();
+    await driver.sleep(config.delays.long);
+
+    // Navigate to workspace after login to ensure we're in the right place
+    logger.info("Navigating to workspace...");
+    await driver.get("https://trello.com/u/drpicadem/boards");
+    await driver.sleep(config.delays.long);
+    
+    logger.success("Login successful!");
+  } catch (error) {
+    logger.error("Login failed: " + error.message);
+    throw error;
   }
-  await driver.sleep(config.delays.standard);
-  logger.success("Login successful!");
 }
 
 /**
