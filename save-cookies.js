@@ -24,6 +24,10 @@ async function saveCookies() {
         });
     });
 
+    console.log("Navigating to boards page to ensure correct cookies...");
+    await driver.get("https://trello.com/u/drpicadem/boards");
+    await driver.sleep(2000); // Wait for page to load
+
     console.log("Extracting cookies...");
     const cookies = await driver.manage().getCookies();
 

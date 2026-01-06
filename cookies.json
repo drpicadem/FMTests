@@ -1,0 +1,111 @@
+[
+  {
+    "domain": ".trello.com",
+    "expiry": 1802293892,
+    "httpOnly": false,
+    "name": "__cid",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "kJTQmWMvXMNn3t4dMFeqFtVs7JhxcqGHvGHXmqxhwsqY5DSZaWK-t6FU0KSrJiCe8GOhxXbGi5_N8t6S4G3cZdsUkfXFCLD23k7ptI9B9NfeArX0yw6v8oRBlfTLBLC68gC_uvAy_MKfUOzFjlSDrZZBnerPDbnN2gOX88tO6amIT--sn0mX0usskLafDbXx2kGb_9wKs7OfIrTo0Ay5tY5V77SPT-y0j0GP-9kArvOQVO-tkVLq9rdSua6MBOitixbfnTRhSJKGWb-q21G6rCMnndT4LZm6lyCs6tME8Lr-L5vW-kGR_8sAsLrtBLL-2hO56IVBnerPDbm68lX8ys0O8LrqD6_q2gK1_NYEuLrpBK7p1g6ysxt17bWOTu2jiFHwuo5b7KqFUey6_ixzkr_U_V8XEReabGABGYeG3HG8loNCkjDuZb0pHJq_Ydyav2Hcmr9h3Jq_Ydyav2Hcmr9h3Jq_Ydyav2Hcmv8hnNr_Idyav2Hcmr9h3Jq_YZyav2Hcmr9h3Jq_YSM"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1767734511,
+    "httpOnly": false,
+    "name": "atl-bsc-show-banner",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "1"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1770325890,
+    "httpOnly": false,
+    "name": "lang",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": true,
+    "value": "en-US"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1799269890,
+    "httpOnly": false,
+    "name": "idMember",
+    "path": "/",
+    "sameSite": "None",
+    "secure": true,
+    "value": "6956d8effcecbe7009ed1776"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1770325890,
+    "httpOnly": false,
+    "name": "aaId",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": true,
+    "value": "712020%3A444806e5-c4f8-48db-bef6-601464884f0a"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1770325890,
+    "httpOnly": false,
+    "name": "hasAccount",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "atlassian"
+  },
+  {
+    "domain": "trello.com",
+    "httpOnly": true,
+    "name": "atlassian.account.xsrf.token",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": true,
+    "value": "f03cc9f7-f60f-4a36-be9c-571f89246f93"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1770325912,
+    "httpOnly": true,
+    "name": "cloud.session.token",
+    "path": "/",
+    "sameSite": "None",
+    "secure": true,
+    "value": "eyJraWQiOiJzZXNzaW9uLXNlcnZpY2UvcHJvZC0xNzM4Nzk0ODc0IiwiYWxnIjoiUlMyNTYifQ.eyJhc3NvY2lhdGlvbnMiOltdLCJzdWIiOiI3MTIwMjA6NDQ0ODA2ZTUtYzRmOC00OGRiLWJlZjYtNjAxNDY0ODg0ZjBhIiwiZW1haWxEb21haW4iOiJnbWFpbC5jb20iLCJpbXBlcnNvbmF0aW9uIjpbXSwiY3JlYXRlZCI6MTc2NzczMzg5MCwicmVmcmVzaFRpbWVvdXQiOjE3Njc3MzQ1MTIsInZlcmlmaWVkIjp0cnVlLCJpc3MiOiJzZXNzaW9uLXNlcnZpY2UiLCJzZXNzaW9uSWQiOiIyZGRlYWFmOS1jOWJhLTQyNzEtYWQ5YS0yNDliN2YwNTc1NTMiLCJzdGVwVXBzIjpbXSwiYXVkIjoiYXRsYXNzaWFuIiwibmJmIjoxNzY3NzMzOTEyLCJleHAiOjE3NzAzMjU5MTIsImlhdCI6MTc2NzczMzkxMiwiZW1haWwiOiJmbXRlc3RvdmlAZ21haWwuY29tIiwianRpIjoiMmRkZWFhZjktYzliYS00MjcxLWFkOWEtMjQ5YjdmMDU3NTUzIn0.knywH8XmYEoN8lFIZ_tZ7I7YqcOZ13txSmaAeIMcuI0QHca754Gvwpz25AmIvt5RCXqR4mCnqx7jRdPxko7Ghw0QayF8blYyP5F4OPTNvJO2wYf468pA9D4mOLXo11c-s5W6-PCQVeZhaOE6zz61SoiDXdmGb9TqwMdCNfiMQtfkAEBDWBFZ7ezbj2ri_DPzxcr6yLIssBpD1nFG-sYNL7d3Gq763LjIze3efJjvr-JaKZkY4A9Wq6e6H_Pkmo2chY2Vjubz7-8eD9MOrlfTykQs-MDVo_Uc3BZSo5JGEAOW9vSDGzhTFr2OhSDCRxxIlJdTugNZRrMDeAhQ31RF8g"
+  },
+  {
+    "domain": ".trello.com",
+    "expiry": 1770325890,
+    "httpOnly": false,
+    "name": "loggedIn",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": true,
+    "value": "1"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1767734511,
+    "httpOnly": false,
+    "name": "atl-bsc-consent-token",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": false,
+    "value": "0030000010"
+  },
+  {
+    "domain": "trello.com",
+    "expiry": 1768943474,
+    "httpOnly": false,
+    "name": "dsc",
+    "path": "/",
+    "sameSite": "None",
+    "secure": true,
+    "value": "3ef4d17824874bad8432aa5caf657c4bbe391bc80f2faeafa82c8411aa52e6c8"
+  }
+]

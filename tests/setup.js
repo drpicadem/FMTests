@@ -75,10 +75,18 @@ async function setupDriver() {
     await driver.sleep(config.delays.afterPageLoad);
 
     const currentUrl = await driver.getCurrentUrl();
+    logger.debug(`Current URL after navigation: ${currentUrl}`);
+
+    // Check how many cookies are still present
+    const remainingCookies = await driver.manage().getCookies();
+    logger.debug(`Cookies remaining after navigation: ${remainingCookies.length}`);
+
     if (!currentUrl.includes("login")) {
       logger.success("Session restored via cookies!");
       isLoggedIn = true;
       return driver;
+    } else {
+      logger.warn("Cookie injection failed - redirected to login page");
     }
   }
 
