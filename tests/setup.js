@@ -53,15 +53,22 @@ async function setupDriver() {
     await driver.manage().deleteAllCookies();
     await driver.sleep(500);
 
+    let addedCount = 0;
+    let failedCount = 0;
+
     for (const cookie of cookies) {
       try {
         // Remove sameSite field as Selenium doesn't support it
         const { sameSite, ...cookieWithoutSameSite } = cookie;
         await driver.manage().addCookie(cookieWithoutSameSite);
+        addedCount++;
       } catch (e) {
-        // Ignore cookies that can't be added
+        failedCount++;
+        logger.debug(`Failed to add cookie: ${cookie.name} - ${e.message}`);
       }
     }
+
+    logger.info(`Cookies added: ${addedCount}, failed: ${failedCount}`);
 
     logger.info("Cookies injected, navigating to boards...");
     await driver.get("https://trello.com/u/drpicadem/boards");
