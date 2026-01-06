@@ -49,47 +49,23 @@ async function setupDriver() {
     // We need to be on the trello domain
     await driver.get("https://trello.com/");
 
+    // Clear all existing cookies first to prevent duplicates (especially DSC cookie)
+    await driver.manage().deleteAllCookies();
+    await driver.sleep(500);
+
     for (const cookie of cookies) {
       try {
-        // Selenium requires strict cookie fields. 
-        // We often need to remove 'sameSite' or normalize 'domain'.
-        const newCookie = {
-          name: cookie.name,
-          value: cookie.value,
-          path: cookie.path,
-          // domain: cookie.domain, // Removing domain fixes "Trouble loading" and mismatched domain errors
-          secure: cookie.secure,
-          httpOnly: cookie.httpOnly,
-          expiry: cookie.expiry
-        };
-
-        // If domain starts with dot, it might need stripping for some drivers, 
-        // but usually keeping it as is or matching current domain is key.
-        // We skipp adding if domain doesn't match current url roughly, 
-        // but Trello cookies are usually .trello.com which is fine.
-
-        await driver.manage().addCookie(newCookie);
+        // Remove sameSite field as Selenium doesn't support it
+        const { sameSite, ...cookieWithoutSameSite } = cookie;
+        await driver.manage().addCookie(cookieWithoutSameSite);
       } catch (e) {
-        // logger.debug("Skipped cookie: " + cookie.name);
+        // Ignore cookies that can't be added
       }
     }
 
     logger.info("Cookies injected, navigating to boards...");
-    // Use generic boards URL which redirects to the correct user profile
-    await driver.get("https://trello.com/boards");
-    await driver.sleep(config.delays.standard);
-
-    // Check for "Trouble loading" or other generic errors and refresh
-    try {
-      let bodyText = await driver.findElement(By.tagName("body")).getText();
-      if (bodyText.includes("trouble loading") || bodyText.includes("wrong")) {
-        logger.info("Correction: Page load error detected, refreshing...");
-        await driver.navigate().refresh();
-        await driver.sleep(config.delays.afterPageLoad);
-      }
-    } catch (e) {
-      // Ignore if body not found
-    }
+    await driver.get("https://trello.com/u/drpicadem/boards");
+    await driver.sleep(config.delays.afterPageLoad);
 
     const currentUrl = await driver.getCurrentUrl();
     if (!currentUrl.includes("login")) {

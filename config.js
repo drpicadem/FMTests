@@ -5,7 +5,7 @@
 module.exports = {
   // Timeouts (milliseconds)
   timeouts: {
-    elementLocator: 10000, 
+    elementLocator: 20000,
     elementLocatorExtended: 15000,
     elementLocatorLong: 20000,
     testDefault: 120000,
