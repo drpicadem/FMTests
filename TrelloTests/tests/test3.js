@@ -14,7 +14,7 @@ async function test3() {
 
   logger.info("Test 3: Testing board creation with too long name...");
 
-  let boardTitleInput = await opexnCreateBoardModal(driver);
+  let boardTitleInput = await openCreateBoardModal(driver);
   await driver.wait(
     until.elementIsVisible(boardTitleInput),
     config.timeouts.elementVisible

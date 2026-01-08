@@ -5,7 +5,11 @@ Ovaj projekat sadrži automatizirane testove za Trello web aplikaciju koristeći
 ## Instalacija
 
 1. Instalirajte Node.js (preporučeno verzija 18 ili novija)
-2. Instalirajte dependencies:
+2. Pozicionirajte se u direktorij sa testovima:
+```bash
+cd TrelloTests
+```
+3. Instalirajte dependencies:
 
 ```bash
 npm install
@@ -37,6 +41,8 @@ Ako ne kreirate `.env` fajl, testovi će koristiti default kredencijale iz `conf
 ## 🧪 Pokretanje testova
 
 ### Pokretanje svih testova
+   
+   > **Napomena:** Budite sigurni da ste u `TrelloTests` direktoriju.
 
 ```bash
 npm test
