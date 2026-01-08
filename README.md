@@ -21,7 +21,7 @@ npm install
 
 ### Postavljanje kredencijala
 
-1. **Kreirajte `.env` fajl** u root direktoriju projekta:
+1. **Kreirajte `.env` fajl** u folderu TrelloTests:
    ```bash
    cp .env.example .env
    ```
