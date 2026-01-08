@@ -8,12 +8,12 @@ require('dotenv').config();
 module.exports = {
   // Timeouts (milliseconds)
   timeouts: {
-    elementLocator: 30000,
-    elementLocatorExtended: 25000,
-    elementLocatorLong: 40000,
-    testDefault: 120000,
-    testBeforeEach: 120000,
-    testAfterEach: 10000,
+    elementLocator: 10000,
+    elementLocatorExtended: 15000,
+    elementLocatorLong: 20000,
+    testDefault: 60000,
+    testBeforeEach: 300000,
+    testAfterEach: 5000,
     elementVisible: 10000,
     elementVisibleExtended: 15000,
   },
@@ -29,7 +29,7 @@ module.exports = {
     afterClick: 500,
     afterModalOpen: 1000,
     afterLogin: 2000,
-    afterPageLoad: 2000,
+    afterPageLoad: 500,
     afterBoardCreate: 2000,
     afterDashboardLoad: 5000,
   },
@@ -43,9 +43,7 @@ module.exports = {
   // Login credentials
   credentials: {
     email: process.env.TRELLO_EMAIL || "fmtestovi@gmail.com",
-    password: process.env.TRELLO_PASSWORD || "FmTestovi123",
+    password: process.env.TRELLO_PASSWORD || "fmtestovi",
   },
 
-  // Login method: 'google' or 'trello'
-  loginMethod: process.env.LOGIN_METHOD || "google",
 };

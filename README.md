@@ -22,22 +22,13 @@ npm install
    cp .env.example .env
    ```
 
-2. **Otvorite `.env` fajl** i unesite svoje kredencijale:
-   ```
-   TRELLO_EMAIL=vas-email@gmail.com
-   TRELLO_PASSWORD=vasa-lozinka
-   LOGIN_METHOD=google
-   ```
+2. **Otvorite `.env` fajl** i unesite kredencijale. Za testiranje je potreban validan Trello nalog.
+   
+   **PREPORUKA**: Preporučuje se korištenje vlastitih kredencijala jer Trello može zatražiti 2FA (Two-Factor Authentication) kod koji će biti poslan na vaš email ili telefon.
+   
+   > **⚠️ VAŽNO**: Za ove testove morate imati validan Trello nalog.
 
-   **LOGIN_METHOD opcije:**
-   - `google` - Prijava preko Google Sign-In (default) - zahtijeva Gmail račun povezan sa Trello nalogom
-   - `trello` - Direktna prijava na Trello - za Trello naloge koji nisu povezani sa Google-om
 
-   > **⚠️ NAPOMENA**: `.env` fajl sadrži vaše lozinke i **NIKADA** se ne smije commitovati u Git! Ovaj fajl je automatski ignorisan u `.gitignore`.
-
-3. **Odaberite odgovarajuću metodu prijave:**
-   - Ako imate Trello nalog povezan sa Google računom → koristite `LOGIN_METHOD=google`
-   - Ako imate samostalan Trello nalog → koristite `LOGIN_METHOD=trello`
 
 ### Bez .env fajla
 

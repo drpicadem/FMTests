@@ -215,14 +215,7 @@ async function findEmailField(driver) {
   return await findElementWithFallback(
     driver,
     [
-      By.css("input[name='user']"),
-      By.css("input[name='email']"),
-      By.css("input[name='username']"),
-      By.id("user"),
-      By.id("username"),
-      By.id("email"),
-      By.css("input[type='email']"),
-      By.css("input[data-testid='username']"), // Atlassian ID
+      By.css("input[name='user'], input[name='email'], input[name='username'], #user, #username, #email, input[type='email'], input[data-testid='username']"),
       By.xpath("//input[@inputmode='email']"),
     ],
     config.timeouts.elementLocator
@@ -693,6 +686,51 @@ async function performDirectTrelloLogin(driver) {
 
     await driver.sleep(config.delays.long);
 
+    // CHECK FOR 2FA OR LOGIN SUCCESS
+    logger.info("Waiting for login result (Dashboard or 2FA)...");
+
+    // Define conditions
+    const isDashboard = async (d) => (await d.getCurrentUrl()).includes("/boards");
+    const is2FA = async (d) => {
+      try {
+        const url = await d.getCurrentUrl();
+        const inputs = await d.findElements(By.css("input[name='code'], input[name='otpCode'], input[pattern='[0-9]*'], input[inputmode='numeric']"));
+        return url.includes("two-factor") || url.includes("mfa") || inputs.length > 0;
+      } catch (e) { return false; }
+    };
+
+    try {
+      // Wait up to 30 seconds for either dashboard or 2FA screen to stabilize
+      await driver.wait(async (d) => {
+        return (await isDashboard(d)) || (await is2FA(d));
+      }, 30000, "Waiting for login to complete or 2FA to appear");
+    } catch (e) {
+      logger.warn("Login transition timed out, checking status...");
+    }
+
+    if (await is2FA(driver)) {
+      logger.warn("2FA DETECTED! Please enter the code manually in the browser window.");
+      logger.warn("Waiting for 5 minutes for manual 2FA entry...");
+
+      // Wait until we are redirected away from the 2FA page or to the boards page
+      // We'll wait up to 5 minutes for the user to enter the code
+      try {
+        await driver.wait(async function (d) {
+          const url = await d.getCurrentUrl();
+          // If url has boards, we are good.
+          // We also check if we simply left the 2fa page (url doesn't have two-factor/mfa and no input)
+          // But safest is to wait for boards or atlassian home
+          return url.includes("/boards") || url.includes("atlassian.com/o/");
+        }, 300000, "Timed out waiting for manual 2FA entry");
+
+        logger.success("2FA apparently passed (url changed), continuing...");
+      } catch (e) {
+        logger.error("Timed out waiting for manual 2FA entry. Script will try to proceed but may fail.");
+      }
+    } else {
+      logger.info("No 2FA screen detected, assuming login successful.");
+    }
+
     // Navigate to workspace after login
     logger.info("Navigating to workspace...");
     await driver.get("https://trello.com/boards");
@@ -709,15 +747,8 @@ async function performDirectTrelloLogin(driver) {
  * Main login function - chooses method based on config
  */
 async function performLogin(driver) {
-  const loginMethod = config.loginMethod.toLowerCase();
-
-  logger.info(`Using login method: ${loginMethod}`);
-
-  if (loginMethod === "trello") {
-    return await performDirectTrelloLogin(driver);
-  } else {
-    return await performGoogleLogin(driver);
-  }
+  logger.info("Using login method: trello");
+  return await performDirectTrelloLogin(driver);
 }
 
 /**
