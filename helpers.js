@@ -215,10 +215,15 @@ async function findEmailField(driver) {
   return await findElementWithFallback(
     driver,
     [
+      By.css("input[name='user']"),
+      By.css("input[name='email']"),
+      By.css("input[name='username']"),
       By.id("user"),
-      By.name("user"),
-      By.css("input[type='text'], input[type='email']"),
-      By.xpath("//input[@type='text' or @type='email']"),
+      By.id("username"),
+      By.id("email"),
+      By.css("input[type='email']"),
+      By.css("input[data-testid='username']"), // Atlassian ID
+      By.xpath("//input[@inputmode='email']"),
     ],
     config.timeouts.elementLocator
   );
@@ -289,7 +294,7 @@ async function handleTwoStepVerificationModal(driver) {
     logger.info("Checking for two-step verification modal...");
     // Wait a bit for modal to appear
     await driver.sleep(config.delays.medium);
-    
+
     // Try to find the "Continue without two-step verification" button
     const continueWithoutButton = await driver.wait(
       until.elementLocated(
@@ -299,7 +304,7 @@ async function handleTwoStepVerificationModal(driver) {
       ),
       config.timeouts.elementLocator
     );
-    
+
     if (continueWithoutButton) {
       await driver.wait(
         until.elementIsVisible(continueWithoutButton),
@@ -321,11 +326,11 @@ async function handleTwoStepVerificationModal(driver) {
  */
 async function loginToGmail(driver) {
   logger.info("Logging in to Gmail...");
-  
+
   try {
     // Wait for page to load
     await driver.sleep(config.delays.mediumLong);
-    
+
     // Check if already logged in by looking for compose button or profile icon
     try {
       const composeButton = await driver.findElement(By.xpath("//div[contains(text(), 'Compose') or contains(@aria-label, 'Compose')]"));
@@ -336,7 +341,7 @@ async function loginToGmail(driver) {
     } catch (e) {
       // Not logged in, continue with login
     }
-    
+
     // Find email input field
     logger.info("Looking for Gmail email input...");
     const emailInput = await driver.wait(
@@ -347,13 +352,13 @@ async function loginToGmail(driver) {
       until.elementIsVisible(emailInput),
       config.timeouts.elementVisible
     );
-    
+
     // Enter email
     logger.info("Entering Gmail email...");
     await emailInput.clear();
     await emailInput.sendKeys(config.gmailCredentials.email);
     await driver.sleep(config.delays.standard);
-    
+
     // Click Next button
     logger.info("Clicking Next button...");
     const nextButton = await driver.wait(
@@ -362,7 +367,7 @@ async function loginToGmail(driver) {
     );
     await nextButton.click();
     await driver.sleep(config.delays.mediumLong);
-    
+
     // Wait for password field
     logger.info("Looking for Gmail password input...");
     const passwordInput = await driver.wait(
@@ -373,13 +378,13 @@ async function loginToGmail(driver) {
       until.elementIsVisible(passwordInput),
       config.timeouts.elementVisible
     );
-    
+
     // Enter password
     logger.info("Entering Gmail password...");
     await passwordInput.clear();
     await passwordInput.sendKeys(config.gmailCredentials.password);
     await driver.sleep(config.delays.standard);
-    
+
     // Click Next/Login button
     logger.info("Clicking Login button...");
     const loginButton = await driver.wait(
@@ -387,11 +392,11 @@ async function loginToGmail(driver) {
       config.timeouts.elementLocator
     );
     await loginButton.click();
-    
+
     // Wait for Gmail to load
     logger.info("Waiting for Gmail to load after login...");
     await driver.sleep(config.gmail.pageLoadTimeout);
-    
+
     logger.success("Gmail login successful!");
   } catch (error) {
     logger.error("Error logging in to Gmail: " + error.message);
@@ -404,30 +409,30 @@ async function loginToGmail(driver) {
  */
 async function openGmailInNewTab(driver) {
   logger.info("Opening Gmail in new tab...");
-  
+
   // Get current window handle (Trello)
   const trelloHandle = await driver.getWindowHandle();
-  
+
   // Open new tab by executing script
   await driver.executeScript("window.open('https://mail.google.com');");
   await driver.sleep(config.delays.medium);
-  
+
   // Get all window handles
   const handles = await driver.getAllWindowHandles();
-  
+
   // Find the Gmail handle (it's the new one)
   const gmailHandle = handles.find(handle => handle !== trelloHandle);
-  
+
   // Switch to Gmail tab
   await driver.switchTo().window(gmailHandle);
   logger.info("Switched to Gmail tab");
-  
+
   // Wait for Gmail to load
   await driver.sleep(config.gmail.pageLoadTimeout);
-  
+
   // Login to Gmail
   await loginToGmail(driver);
-  
+
   return { trelloHandle, gmailHandle };
 }
 
@@ -452,15 +457,15 @@ async function find2FACodeInput(driver) {
  */
 async function extract2FACodeFromGmail(driver, gmailHandle, trelloHandle) {
   logger.info("Extracting 2FA code from Gmail...");
-  
+
   // Make sure we're on Gmail tab
   await driver.switchTo().window(gmailHandle);
   await driver.sleep(config.delays.medium);
-  
+
   try {
     // Wait a bit for email to arrive
     await driver.sleep(config.delays.long);
-    
+
     // Try to find the latest email from Trello with verification code
     // Look for emails with "Verifying it's you" or similar subject
     const emailStrategies = [
@@ -469,7 +474,7 @@ async function extract2FACodeFromGmail(driver, gmailHandle, trelloHandle) {
       By.xpath("//div[contains(@class, 'Cp')]//span[contains(text(), 'Verifying')]/.."),
       By.css("tr.zA"),
     ];
-    
+
     let emailElement = null;
     for (let strategy of emailStrategies) {
       try {
@@ -482,16 +487,16 @@ async function extract2FACodeFromGmail(driver, gmailHandle, trelloHandle) {
         continue;
       }
     }
-    
+
     if (!emailElement) {
       throw new Error("Could not find Trello verification email");
     }
-    
+
     // Click on the email to open it
     logger.info("Opening verification email...");
     await emailElement.click();
     await driver.sleep(config.gmail.emailOpenTimeout);
-    
+
     // Get the email body text
     const bodyElement = await driver.wait(
       until.elementLocated(By.css("div[role='main'], div.a3s, div.ii")),
@@ -499,29 +504,29 @@ async function extract2FACodeFromGmail(driver, gmailHandle, trelloHandle) {
     );
     await driver.sleep(config.delays.medium);
     const emailText = await bodyElement.getText();
-    
+
     logger.debug("Email text: " + emailText.substring(0, 200));
-    
+
     // Extract the 6-character code using regex
     // Pattern: 6 uppercase letters/numbers (e.g., PWM476)
     const codePattern = /\b[A-Z0-9]{6}\b/;
     const match = emailText.match(codePattern);
-    
+
     if (!match) {
       throw new Error("Could not extract 2FA code from email");
     }
-    
+
     const code = match[0];
     logger.success(`2FA code found: ${code}`);
-    
+
     // Switch back to Trello tab
     await driver.switchTo().window(trelloHandle);
-    
+
     // Close Gmail tab
     await driver.switchTo().window(gmailHandle);
     await driver.close();
     await driver.switchTo().window(trelloHandle);
-    
+
     return code;
   } catch (error) {
     logger.error("Error extracting 2FA code: " + error.message);
@@ -537,10 +542,10 @@ async function extract2FACodeFromGmail(driver, gmailHandle, trelloHandle) {
 async function handle2FAWithGmail(driver) {
   try {
     logger.info("Checking for 2FA verification requirement...");
-    
+
     // Wait a bit to see if 2FA is required
     await driver.sleep(config.delays.mediumLong);
-    
+
     // Try to find 2FA code input field
     let codeInput;
     try {
@@ -551,19 +556,19 @@ async function handle2FAWithGmail(driver) {
       logger.debug("2FA not required, continuing...");
       return false;
     }
-    
+
     // Open Gmail in new tab
     const { trelloHandle, gmailHandle } = await openGmailInNewTab(driver);
-    
+
     // Extract code from Gmail
     const code = await extract2FACodeFromGmail(driver, gmailHandle, trelloHandle);
-    
+
     // Enter the code
     logger.info("Entering 2FA code...");
     await codeInput.clear();
     await codeInput.sendKeys(code);
     await driver.sleep(config.delays.standard);
-    
+
     // Find and click submit button
     const submitButton = await findElementWithFallback(
       driver,
@@ -574,10 +579,10 @@ async function handle2FAWithGmail(driver) {
       ],
       config.twoFactorAuth.codeInputTimeout
     );
-    
+
     await submitButton.click();
     await driver.sleep(config.twoFactorAuth.verificationTimeout);
-    
+
     logger.success("2FA verification successful!");
     return true;
   } catch (error) {
@@ -587,9 +592,138 @@ async function handle2FAWithGmail(driver) {
 }
 
 /**
- * Perform login to Trello via Google Sign-In
+ * Perform direct login to Trello (without Google Sign-In)
+ */
+async function performDirectTrelloLogin(driver) {
+  try {
+    logger.info("Performing direct Trello login...");
+    await driver.sleep(config.delays.medium);
+
+    // Debug: Log current URL and Title
+    const currentUrl = await driver.getCurrentUrl();
+    const pageTitle = await driver.getTitle();
+    logger.info(`Current URL: ${currentUrl}`);
+    logger.info(`Page Title: ${pageTitle}`);
+
+    // Verify we are on a login page, if not, try to navigate there
+    if (!currentUrl.includes("login") && !currentUrl.includes("id.atlassian.com")) {
+      logger.info("Not on login page, navigating to https://trello.com/login...");
+      await driver.get("https://trello.com/login");
+      await driver.sleep(config.delays.afterPageLoad);
+    }
+
+    // Find and fill email field
+    logger.info("Looking for email field...");
+
+    // Explicit wait for any input to ensure page is loaded
+    try {
+      await driver.wait(until.elementLocated(By.css("input")), 10000);
+    } catch (e) {
+      logger.info("No inputs found on page, dumping body text...");
+      const body = await driver.findElement(By.css("body")).getText();
+      logger.debug("Body text: " + body.substring(0, 500));
+    }
+
+    const emailField = await findEmailField(driver);
+    await driver.wait(
+      until.elementIsVisible(emailField),
+      config.timeouts.elementVisible
+    );
+
+    logger.info("Entering email...");
+    await emailField.clear();
+    await emailField.sendKeys(config.credentials.email);
+    await driver.sleep(config.delays.short);
+
+    // Click Continue button
+    logger.info("Clicking Continue button...");
+    const continueButton = await findContinueButton(driver);
+    await continueButton.click();
+    await driver.sleep(config.delays.mediumLong);
+
+    // CHECK FOR ATLASSIAN REDIRECT
+    logger.info("Checking for Atlassian redirect...");
+    const urlAfterEmail = await driver.getCurrentUrl();
+    if (urlAfterEmail.includes("id.atlassian.com")) {
+      logger.info("Detected Atlassian Login Flow");
+
+      // Wait for password field on Atlassian page
+      logger.info("Waiting for Atlassian password field...");
+      const atlassianPasswordField = await driver.wait(
+        until.elementLocated(By.css("input[type='password'], #password")),
+        config.timeouts.elementLocatorLong
+      );
+      await driver.wait(until.elementIsVisible(atlassianPasswordField), config.timeouts.elementVisible);
+
+      logger.info("Entering Atlassian password...");
+      await atlassianPasswordField.clear();
+      await atlassianPasswordField.sendKeys(config.credentials.password);
+      await driver.sleep(config.delays.short);
+
+      // Click Atlassian Login button
+      logger.info("Clicking Atlassian Login button...");
+      const atlassianLoginButton = await driver.wait(
+        until.elementLocated(By.css("#login-submit, button[type='submit']")),
+        config.timeouts.elementLocator
+      );
+      await atlassianLoginButton.click();
+
+    } else {
+      // STANDARD TRELLO FLOW
+      logger.info("Continuing with Standard Trello Flow");
+
+      // Find and fill password field
+      logger.info("Looking for password field...");
+      const passwordField = await findPasswordField(driver);
+      await driver.wait(
+        until.elementIsVisible(passwordField),
+        config.timeouts.elementVisible
+      );
+
+      logger.info("Entering password...");
+      await passwordField.clear();
+      await passwordField.sendKeys(config.credentials.password);
+      await driver.sleep(config.delays.short);
+
+      // Click Login button
+      logger.info("Clicking Login button...");
+      const loginButton = await findLoginButton(driver);
+      await loginButton.click();
+    }
+
+    await driver.sleep(config.delays.long);
+
+    // Navigate to workspace after login
+    logger.info("Navigating to workspace...");
+    await driver.get("https://trello.com/boards");
+    await driver.sleep(config.delays.long);
+
+    logger.success("Direct Trello login successful!");
+  } catch (error) {
+    logger.error("Direct Trello login failed: " + error.message);
+    throw error;
+  }
+}
+
+/**
+ * Main login function - chooses method based on config
  */
 async function performLogin(driver) {
+  const loginMethod = config.loginMethod.toLowerCase();
+
+  logger.info(`Using login method: ${loginMethod}`);
+
+  if (loginMethod === "trello") {
+    return await performDirectTrelloLogin(driver);
+  } else {
+    return await performGoogleLogin(driver);
+  }
+}
+
+/**
+ * Perform login to Trello via Google Sign-In
+ */
+async function performGoogleLogin(driver) {
   try {
     logger.info("Waiting for Trello login page...");
     await driver.sleep(config.delays.medium);
@@ -663,9 +797,9 @@ async function performLogin(driver) {
 
     // Navigate to workspace after login to ensure we're in the right place
     logger.info("Navigating to workspace...");
-    await driver.get("https://trello.com/u/drpicadem/boards");
+    await driver.get("https://trello.com/boards");
     await driver.sleep(config.delays.long);
-    
+
     logger.success("Login successful!");
   } catch (error) {
     logger.error("Login failed: " + error.message);
@@ -701,14 +835,14 @@ async function createBoard(driver, boardName) {
 async function findBoardHeader(driver, boardName = null) {
   const strategies = boardName
     ? [
-        By.xpath(`//h1[contains(text(),'${boardName}')]`),
-        By.xpath("//h1"),
-        By.css("[data-testid='board-name'], [class*='board-name'], h1"),
-      ]
+      By.xpath(`//h1[contains(text(),'${boardName}')]`),
+      By.xpath("//h1"),
+      By.css("[data-testid='board-name'], [class*='board-name'], h1"),
+    ]
     : [
-        By.xpath("//h1"),
-        By.css("[data-testid='board-name'], [class*='board-name'], h1"),
-      ];
+      By.xpath("//h1"),
+      By.css("[data-testid='board-name'], [class*='board-name'], h1"),
+    ];
 
   for (let strategy of strategies) {
     try {

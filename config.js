@@ -2,17 +2,20 @@
  * Configuration for timeouts, delays, retry and credentials
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 module.exports = {
   // Timeouts (milliseconds)
   timeouts: {
-    elementLocator: 10000, 
-    elementLocatorExtended: 15000,
-    elementLocatorLong: 20000,
+    elementLocator: 30000,
+    elementLocatorExtended: 25000,
+    elementLocatorLong: 40000,
     testDefault: 120000,
-    testBeforeEach: 60000,
+    testBeforeEach: 120000,
     testAfterEach: 10000,
-    elementVisible: 5000,
-    elementVisibleExtended: 7000,
+    elementVisible: 10000,
+    elementVisibleExtended: 15000,
   },
 
   // Delays (milliseconds)
@@ -39,7 +42,10 @@ module.exports = {
 
   // Login credentials
   credentials: {
-    email: "fmtestovi@gmail.com",
-    password: "FmTestovi123",
+    email: process.env.TRELLO_EMAIL || "fmtestovi@gmail.com",
+    password: process.env.TRELLO_PASSWORD || "FmTestovi123",
   },
+
+  // Login method: 'google' or 'trello'
+  loginMethod: process.env.LOGIN_METHOD || "google",
 };

@@ -4,4 +4,6 @@ package-lock.json
 *.log
 .screenshots/
 test-results/
+.env
+
 
